@@ -62,4 +62,48 @@ Setting up gateway using spring api gateway
 6. Invoking the gateway instead of microservice
    Ex: `http://localhost:8072/<ServiceName>/<ApiPath> - ` 
     ![img_2.png](img_2.png)
-7. 
+
+Custom Routing and adding Filters - Defining custom routing paths
+---------------------------------------------
+1. Add the RouteLocator defining the bean
+   ````java
+        @SpringBootApplication
+        public class GatewayserverApplication {
+        
+            public static void main(String[] args) {
+                SpringApplication.run(GatewayserverApplication.class, args);
+            }
+        
+            @Bean
+            public RouteLocator eazyBankRouteConfig(RouteLocatorBuilder routeLocatorBuilder) {
+                return routeLocatorBuilder.routes()
+                                .route(p -> p
+                                        .path("/eazybank/accounts/**")
+                                        .filters( f -> f.rewritePath("/eazybank/accounts/(?<segment>.*)","/${segment}")
+                                                .addResponseHeader("X-Response-Time", LocalDateTime.now().toString()))
+                                        .uri("lb://ACCOUNTS"))
+                            .route(p -> p
+                                    .path("/eazybank/loans/**")
+                                    .filters( f -> f.rewritePath("/eazybank/loans/(?<segment>.*)","/${segment}")
+                                            .addResponseHeader("X-Response-Time", LocalDateTime.now().toString()))
+                                    .uri("lb://LOANS"))
+                            .route(p -> p
+                                    .path("/eazybank/cards/**")
+                                    .filters( f -> f.rewritePath("/eazybank/cards/(?<segment>.*)","/${segment}")
+                                            .addResponseHeader("X-Response-Time", LocalDateTime.now().toString()))
+                                    .uri("lb://CARDS")).build();
+        
+        
+            }
+        
+        
+        }
+    ````
+2. Examples
+   ![img_3.png](img_3.png)
+3. Response having custom header added using filter
+    ![img_4.png](img_4.png)
+
+
+Adding Filters
+-----------------
